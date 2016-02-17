@@ -1,7 +1,5 @@
 #pragma once
 
-#include "bloomFilter.hpp"
-
 template<class KeyType,
          class ValueType,
          class Hash = std::hash<KeyType>,
