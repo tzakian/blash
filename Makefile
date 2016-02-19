@@ -10,7 +10,7 @@ LIBOBJECTS = ./cuckoofilter/src/hashutil.o
 HEADERS = -I./cuckoofilter/src/cuckoofilter.h -Iblash.hpp
 
 all: $(DEPENDS)
-	$(CXX)  $(FLAGS) $(LDFLAGS) $(HEADERS) $(LIBOBJECTS) $(DEPENDS) -o $@
+	$(CXX)  $(FLAGS) $(LDFLAGS) $(HEADERS) $(LIBOBJECTS) $(DEPENDS) -o main
 
 clean:
 	rm main

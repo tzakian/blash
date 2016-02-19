@@ -19,13 +19,18 @@ namespace bloomhash {
             Node* next;
           };
 
+          Hash hasher;
+          KeyEqual eq;
+
           Node* buckets;
           size_t size = defaultSize;
+          size_t used = 0;
           cuckoofilter::CuckooFilter<KeyType, numBitsToUse>* filters;
 
           void insertInChain(size_t index, const KeyType& key, const ValueType& val);
           void deleteInChain(size_t index, const KeyType& key);
           bool chainContains(size_t index, const KeyType& key);
+          void rehashResize();
         public:
           typedef Node* Iter;
           BloomHash();
