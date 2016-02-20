@@ -1,3 +1,4 @@
+// TODO: make pointers be unique and shared
 #pragma once
 #include "./cuckoofilter/src/cuckoofilter.h"
 #include <iostream>

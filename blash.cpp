@@ -220,9 +220,13 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
+    // TODO: we should have unique_ptrs, and we should do move's here. As
+    // is THIS IS UNSAFE AND WRONG
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
     ::BloomHash(BloomHash&& other) {
-
+      filters = other.filters;
+      buckets = other.buckets;
+      size = other.size;
     }
 
 template<class KeyType,
