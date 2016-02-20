@@ -17,6 +17,8 @@ namespace bloomhash {
             KeyType key;
             ValueType val;
             Node* next;
+            Node(const KeyType& key, const ValueType& val) : key(key), val(val), next(nullptr) {}
+            Node() {}
           };
 
           Hash hasher;
@@ -29,7 +31,6 @@ namespace bloomhash {
 
           void insertInChain(size_t index, const KeyType& key, const ValueType& val);
           void deleteInChain(size_t index, const KeyType& key);
-          bool bucketContains(size_t index, const KeyType& key);
           void rehashResize();
         public:
           typedef Node* Iter;
@@ -48,5 +49,8 @@ namespace bloomhash {
           ValueType& find(const KeyType& key);
           //Iter find(const KeyType& key);
           void erase(const KeyType& key);
+          // Find if the bucket contains anything
+          // NOTE: probabilisit
+          bool bucketContains(const KeyType& key);
       };
 } // End bloomhash

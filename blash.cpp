@@ -1,3 +1,6 @@
+// XXX: Need to make it use KeyEqual as opposed to ==
+// XXX: Need to do error checking on the calls into the filter and make
+//      sure things are not going wrong in there
 #include "blash.hpp"
 
 namespace bloomhash {
@@ -133,8 +136,21 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    bool BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::bucketContains(size_t idx, const KeyType& key) {
-
+    // VERY similar to deleteInChain
+    bool BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::bucketContains(const KeyType& key) {
+      size_t idx = hasher(key) % size;
+      // This returns cuckoofilter::Ok then there is a very strong
+      // probability of it being in the chain so go searching for it. If it
+      // returns something else, then it's definitely _not_ in the chain so
+      // simply return false.
+      if (filters[idx].Contain(key) == cuckoofilter::Ok) {
+        // probabilistic! This gives a high certainting that something with
+        // that key is in the bucket but it need not be the case (but this
+        // is _highly_ unlikely).
+        return true;
+      } else {
+        return false;
+      }
     }
 
 template<class KeyType,
@@ -143,8 +159,11 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
+    // We lazily allocate filters
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::BloomHash() {
-
+      // TODO: make it check to make sure we allocated the memory here
+      filters = calloc(sizeof(cuckoofilter::CuckooFilter<KeyType, numBitsToUse>), defaultSize);
+      buckets = calloc(sizeof(Node), defaultSize);
     }
 
 template<class KeyType,
@@ -153,8 +172,40 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
+    // REMEMBER: we create filters lazily!
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::BloomHash(BloomHash& other) {
+      // State that needs to be copied:
+      // * size of buckets -- DONE
+      // * each node in the table -- DONE
+      // * filters -- How to copy these? -- just create a new one and add -- DONE
+      // * size -- DONE
+      filters = calloc(sizeof(cuckoofilter::CuckooFilter<KeyType, numBitsToUse>), other.size);
+      buckets = calloc(sizeof(Node), other.size);
 
+      size = other.size;
+
+      for (int i = 0; i < size; ++i) {
+        // Copy the chain
+        if (other.buckets[i] != nullptr) {
+          Node* curr = other.buckets[i];
+
+          // Create the filter and add the data in
+          cuckoofilter::CuckooFilter<KeyType, numBitsToUse> newFilt;
+          newFilt.Add(curr->key);
+
+          // Setup the head
+          Node* newNode = new Node(curr->key, curr->val);
+          buckets[i] = newNode;
+          curr = curr->next;
+
+          while (curr) {
+            newFilt.Add(curr->key);
+            Node* newNodeNext = new Node(curr->key, curr->val);
+            newNode->next = newNodeNext;
+            newNode = newNode->next;
+          }
+        }
+      }
     }
 
 template<class KeyType,
