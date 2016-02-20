@@ -67,7 +67,7 @@ template<class KeyType,
             // No collision, so we simply add it. Also since we're updating
             // (i.e. re-doing) the filters, we need to create one here
             newHash[newHsh] = chain;
-            newFilters[newHash] = new cuckoofilter::CuckooFilter<KeyType, numBitsToUse>();
+            newFilters[newHash] = cuckoofilter::CuckooFilter<KeyType, numBitsToUse>();
           }
           newFilters[newHash].Add(chain->key);
           chain = tmp;
