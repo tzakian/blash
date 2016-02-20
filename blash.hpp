@@ -29,7 +29,7 @@ namespace bloomhash {
 
           void insertInChain(size_t index, const KeyType& key, const ValueType& val);
           void deleteInChain(size_t index, const KeyType& key);
-          bool chainContains(size_t index, const KeyType& key);
+          bool bucketContains(size_t index, const KeyType& key);
           void rehashResize();
         public:
           typedef Node* Iter;
