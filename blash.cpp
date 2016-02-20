@@ -10,7 +10,8 @@ template<class KeyType,
   class  KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::insertInChain(size_t idx, const KeyType& key, const ValueType& val) {
+    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+         ::insertInChain(size_t idx, const KeyType& key, const ValueType& val) {
       // We will get a low set of false-positives here
       if (filters[idx].Contain(key) == cuckoofilter::Ok) { // it is _in_ the chain so we need to search through and updat the val
         Node* curr = buckets[idx];
@@ -35,7 +36,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::rehashResize() {
+    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+         ::rehashResize() {
       size_t newSize = size * 2;
       // TODO: try to make this whole thing re-use the pre-existing memory
       // that we have already allocated for @buckets and @filters
@@ -93,7 +95,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::deleteInChain(size_t idx, const KeyType& key) {
+    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+         ::deleteInChain(size_t idx, const KeyType& key) {
       // This returns cuckoofilter::Ok then there is a very strong
       // probability of it being in the chain so go searching for it. If it
       // returns something else, then it's definitely _not_ in the chain so
@@ -137,7 +140,8 @@ template<class KeyType,
   size_t numBitsToUse,
   size_t defaultSize>
     // VERY similar to deleteInChain
-    bool BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::bucketContains(const KeyType& key) {
+    bool BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+         ::bucketContains(const KeyType& key) {
       size_t idx = hasher(key) % size;
       // This returns cuckoofilter::Ok then there is a very strong
       // probability of it being in the chain so go searching for it. If it
@@ -160,7 +164,8 @@ template<class KeyType,
   size_t numBitsToUse,
   size_t defaultSize>
     // We lazily allocate filters
-    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::BloomHash() {
+    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+    ::BloomHash() {
       // TODO: make it check to make sure we allocated the memory here
       filters = calloc(sizeof(cuckoofilter::CuckooFilter<KeyType, numBitsToUse>), defaultSize);
       buckets = calloc(sizeof(Node), defaultSize);
@@ -173,7 +178,8 @@ template<class KeyType,
   size_t numBitsToUse,
   size_t defaultSize>
     // REMEMBER: we create filters lazily!
-    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::BloomHash(BloomHash& other) {
+    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+    ::BloomHash(BloomHash& other) {
       // State that needs to be copied:
       // * size of buckets -- DONE
       // * each node in the table -- DONE
@@ -214,7 +220,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::BloomHash(BloomHash&& other) {
+    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+    ::BloomHash(BloomHash&& other) {
 
     }
 
@@ -224,7 +231,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>& BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::operator=(BloomHash& other) {
+    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>&
+    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::operator=(BloomHash& other) {
 
     }
 
@@ -234,7 +242,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>& BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::operator=(BloomHash&& other) {
+    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>&
+    BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::operator=(BloomHash&& other) {
 
     }
 
@@ -254,7 +263,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::insert(const KeyType& key, const ValueType& val) {
+    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+         ::insert(const KeyType& key, const ValueType& val) {
 
     }
 
@@ -264,7 +274,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::erase(const KeyType& key) {
+    void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+         ::erase(const KeyType& key) {
 
     }
 
@@ -274,7 +285,8 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    ValueType& BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::find(const KeyType& key) {
+    ValueType& BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+               ::find(const KeyType& key) {
       //BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::Iter
       //BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::find(const KeyType& key) {
     }
