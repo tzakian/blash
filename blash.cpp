@@ -16,7 +16,7 @@ template<class KeyType,
       if (filters[idx].Contain(key) == cuckoofilter::Ok) { // it is _in_ the chain so we need to search through and updat the val
         Node* curr = buckets[idx];
         while (curr) {
-          if (curr->key == key) {
+          if (eq(curr->key,key)) {
             curr->val = val;
           }
         }
@@ -110,7 +110,7 @@ template<class KeyType,
         Node* prev = nullptr;
         while (curr) {
           // Found it
-          if (curr->key == key) {
+          if (eq(curr->key, key)) {
             // So delete it from the filter
             filters[idx].Delete(key);
             // This was at the head of the chain. So simply replace what
