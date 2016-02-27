@@ -7,7 +7,7 @@ there. This seeks to solve the case where the key values for our hash table
 incur costly comparisons (and are therefore usually quite large). To solve this, we use
 bloom filters to track membership in the chains for a given hash bucket. We
 decided to use open hashing as opposed closed hashing since for large
-objects, open hashing is usually (...) more efficient then closed hashing.
+objects, open hashing is usually (...) more efficient than closed hashing.
 
 # Possible cool extensions:
 Try to use the fact that if we can guarantee a uniform collision pattern in
