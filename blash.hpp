@@ -2,6 +2,7 @@
 #pragma once
 #include "./cuckoofilter/src/cuckoofilter.h"
 #include <iostream>
+#include <vector>
 
 namespace bloomhash {
 
@@ -25,10 +26,11 @@ namespace bloomhash {
           Hash hasher;
           KeyEqual eq;
 
-          Node* buckets;
+          std::vector<Node*> buckets;
+          std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>> filters;
+
           size_t size = defaultSize;
           size_t used = 0;
-          cuckoofilter::CuckooFilter<KeyType, numBitsToUse>* filters;
 
           void insertInChain(size_t index, const KeyType& key, const ValueType& val);
           void deleteInChain(size_t index, const KeyType& key);

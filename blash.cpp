@@ -23,10 +23,10 @@ template<class KeyType,
       } else { // not in the chain so add it at the beginning
         filters[idx].Add(key);
         Node* newStart = new Node();
-        newStart->key = key;
-        newStart->val = val;
+        newStart->key  = key;
+        newStart->val  = val;
         newStart->next = buckets[idx];
-        buckets[idx] = newStart;
+        buckets[idx]   = newStart;
       }
     }
 
@@ -41,9 +41,9 @@ template<class KeyType,
       size_t newSize = size * 2;
       // TODO: try to make this whole thing re-use the pre-existing memory
       // that we have already allocated for @buckets and @filters
-      Node* newHash = calloc(sizeof(Node), newSize);
+      std::vector<Node*> newHash(newSize);
       // Chains are getting moved around so we need to re-do our filters
-      cuckoofilter::CuckooFilter<KeyType, numBitsToUse>* newFilters = calloc(sizeof(cuckoofilter::CuckooFilter<KeyType, numBitsToUse>), newSize);
+      std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>> newFilters(newSize);
 
       // Go through our old buckets and filters
       for (int i = 0; i < size; ++i) {
@@ -69,22 +69,20 @@ template<class KeyType,
             // No collision, so we simply add it. Also since we're updating
             // (i.e. re-doing) the filters, we need to create one here
             newHash[newHsh] = chain;
-            newFilters[newHash] = cuckoofilter::CuckooFilter<KeyType, numBitsToUse>();
-          }
+          } // end if
+
           newFilters[newHash].Add(chain->key);
           chain = tmp;
-        }
+
+        } // end while
       }
+
       // update size now
       size = newSize;
 
-      // free our buckets
-      free(buckets);
       // Now point them at the new one
       buckets = newHash;
 
-      // free the filter-array memory
-      free(filters);
       // Now point them at the new filters
       filters = newFilters;
     }
@@ -165,11 +163,7 @@ template<class KeyType,
   size_t defaultSize>
     // We lazily allocate filters
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
-    ::BloomHash() {
-      // TODO: make it check to make sure we allocated the memory here
-      filters = calloc(sizeof(cuckoofilter::CuckooFilter<KeyType, numBitsToUse>), defaultSize);
-      buckets = calloc(sizeof(Node), defaultSize);
-    }
+    ::BloomHash() : filters(defaultSize), buckets(defaultSize) { }
 
 template<class KeyType,
   class ValueType,
@@ -185,8 +179,8 @@ template<class KeyType,
       // * each node in the table -- DONE
       // * filters -- How to copy these? -- just create a new one and add -- DONE
       // * size -- DONE
-      filters = calloc(sizeof(cuckoofilter::CuckooFilter<KeyType, numBitsToUse>), other.size);
-      buckets = calloc(sizeof(Node), other.size);
+      filters = std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>>(other.size);
+      buckets = std::vector<Node*>(other.size);
 
       size = other.size;
 
@@ -195,9 +189,8 @@ template<class KeyType,
         if (other.buckets[i] != nullptr) {
           Node* curr = other.buckets[i];
 
-          // Create the filter and add the data in
-          cuckoofilter::CuckooFilter<KeyType, numBitsToUse> newFilt;
-          newFilt.Add(curr->key);
+          // Add the data in
+          filters[i].Add(curr->key);
 
           // Setup the head
           Node* newNode = new Node(curr->key, curr->val);
@@ -205,7 +198,7 @@ template<class KeyType,
           curr = curr->next;
 
           while (curr) {
-            newFilt.Add(curr->key);
+            filters[i].Add(curr->key);
             Node* newNodeNext = new Node(curr->key, curr->val);
             newNode->next = newNodeNext;
             newNode = newNode->next;
@@ -226,7 +219,7 @@ template<class KeyType,
     ::BloomHash(BloomHash&& other) {
       filters = other.filters;
       buckets = other.buckets;
-      size = other.size;
+      size    = other.size;
     }
 
 template<class KeyType,
