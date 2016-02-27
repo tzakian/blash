@@ -231,6 +231,40 @@ template<class KeyType,
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>&
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::operator=(BloomHash& other) {
 
+      BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize> ret;
+
+      // State that needs to be copied:
+      // * size of buckets -- DONE
+      // * each node in the table -- DONE
+      // * filters -- How to copy these? -- just create a new one and add -- DONE
+      // * size -- DONE
+      ret.filters = std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>>(other.size);
+      ret.buckets = std::vector<Node*>(other.size);
+
+      ret.size = other.size;
+
+      for (int i = 0; i < size; ++i) {
+        // Copy the chain
+        if (other.buckets[i] != nullptr) {
+          Node* curr = other.buckets[i];
+
+          // Add the data in
+          ret.filters[i].Add(curr->key);
+
+          // Setup the head
+          Node* newNode = new Node(curr->key, curr->val);
+          ret.buckets[i] = newNode;
+          curr = curr->next;
+
+          while (curr) {
+            ret.filters[i].Add(curr->key);
+            Node* newNodeNext = new Node(curr->key, curr->val);
+            newNode->next = newNodeNext;
+            newNode = newNode->next;
+          }
+        }
+      }
+      return ret;
     }
 
 template<class KeyType,
@@ -242,6 +276,10 @@ template<class KeyType,
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>&
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::operator=(BloomHash&& other) {
 
+      BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize> ret;
+      ret.filters = other.filters;
+      ret.buckets = other.buckets;
+      ret.size    = other.size;
     }
 
 template<class KeyType,
@@ -251,7 +289,14 @@ template<class KeyType,
   size_t numBitsToUse,
   size_t defaultSize>
     BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::~BloomHash() {
-
+      // all the other stuff will (/should) be deleted by the C++ MM
+      for (Node* bucket : buckets) {
+        while (bucket) {
+          Node* nxt = bucket->next;
+          delete bucket;
+          bucket = nxt;
+        }
+      }
     }
 
 template<class KeyType,
@@ -262,7 +307,6 @@ template<class KeyType,
   size_t defaultSize>
     void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
          ::insert(const KeyType& key, const ValueType& val) {
-
     }
 
 template<class KeyType,
