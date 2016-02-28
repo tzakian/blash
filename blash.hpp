@@ -49,8 +49,8 @@ namespace bloomhash {
           // No virtual functions, so no need for this to be virtual
           ~BloomHash();
           void insert(const KeyType& key, const ValueType& val);
-          ValueType& find(const KeyType& key);
-          //Iter find(const KeyType& key);
+          //ValueType& find(const KeyType& key);
+          auto find(const KeyType& key);
           void erase(const KeyType& key);
           // Find if the bucket contains anything
           // NOTE: probabilisit

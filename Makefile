@@ -1,15 +1,23 @@
 CXX=g++
-FLAGS=-std=c++11 -stdlib=libc++
-LDFLAGS+= -Wall -lpthread -lssl -lcrypto
+FLAGS=-std=c++14 -stdlib=libc++ -Wall
+LDFLAGS+= -lpthread -lssl -lcrypto
 
-DEPENDS= main.cpp \
-				 blash.cpp
+DEPENDS= main.cpp
 
-LIBOBJECTS = ./cuckoofilter/src/hashutil.o
+#blash.cpp
+
+LIBS= blash.cpp
+
+LIBOBJECTS = -L./cuckoofilter/src/hashutil.o -Lblash.o
 
 HEADERS = -I./cuckoofilter/src/cuckoofilter.h -Iblash.hpp
 
-all: $(DEPENDS)
+all: make_objs exc
+ 
+make_objs: $(LIBS)
+	$(CXX) $(FLAGS) ${LDFLAGS} $(HEADERS) $(LIBOBJECTS) -c $^
+
+exc: $(DEPENDS)
 	$(CXX)  $(FLAGS) $(LDFLAGS) $(HEADERS) $(LIBOBJECTS) $(DEPENDS) -o main
 
 clean:

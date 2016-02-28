@@ -307,6 +307,7 @@ template<class KeyType,
   size_t defaultSize>
     void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
          ::insert(const KeyType& key, const ValueType& val) {
+           insertInChain(hasher(key) % size, key, val);
     }
 
 template<class KeyType,
@@ -317,7 +318,7 @@ template<class KeyType,
   size_t defaultSize>
     void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
          ::erase(const KeyType& key) {
-
+           deleteInChain(hasher(key) % size, key);
     }
 
 template<class KeyType,
@@ -326,11 +327,25 @@ template<class KeyType,
   class KeyEqual,
   size_t numBitsToUse,
   size_t defaultSize>
-    ValueType& BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
-               ::find(const KeyType& key) {
-      //BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::Iter
-      //BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::find(const KeyType& key) {
-    }
-    }
+    //Ick! uaing auto so I don't get complained at by the type system. For
+    //some reason the class isn't exposing the typedef from inside the
+    //class even though it's public.
+    auto BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>
+         ::find(const KeyType& key) {
+           size_t hsh = hasher(key) % size;
+           Node* bucket = nullptr;
+           if (filters[hsh].Contain(key)) {
+             bucket = buckets[hsh];
+             while (bucket) {
+               if (eq(bucket->key, key)) {
+                 break;
+               } else {
+                 bucket = bucket->next;
+               }
+             }
+           }
+           return bucket;
+         }
+}
 
 
