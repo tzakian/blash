@@ -1,6 +1,7 @@
 // For testing
 #include <iostream>
 #include <fstream>
+#include "./cuckoofilter/src/cuckoofilter.h"
 #include "blash.hpp"
 
 using cuckoofilter::CuckooFilter;
@@ -39,10 +40,12 @@ using namespace std;
  *
  *  return 0;
  *}
+ *
  */
 
 int main(void)
 {
   bloomhash::BloomHash<string, string> hash;
+  hash.insert("one", "two");
   return 0;
 }

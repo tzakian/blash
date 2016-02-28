@@ -4,21 +4,16 @@ LDFLAGS+= -lpthread -lssl -lcrypto
 
 DEPENDS= main.cpp
 
-#blash.cpp
+LIBOBJECTS = ./cuckoofilter/src/hashutil.o
 
-LIBS= blash.cpp
+HEADERS = -I./cuckoofilter/src/cuckoofilter.h 
 
-LIBOBJECTS = -L./cuckoofilter/src/hashutil.o -Lblash.o
+#-Iblash.hpp
 
-HEADERS = -I./cuckoofilter/src/cuckoofilter.h -Iblash.hpp
-
-all: make_objs exc
- 
-make_objs: $(LIBS)
-	$(CXX) $(FLAGS) ${LDFLAGS} $(HEADERS) $(LIBOBJECTS) -c $^
+all: exc
 
 exc: $(DEPENDS)
-	$(CXX)  $(FLAGS) $(LDFLAGS) $(HEADERS) $(LIBOBJECTS) $(DEPENDS) -o main
+	$(CXX)  $(FLAGS) $(LDFLAGS) $(LIBOBJECTS) $(HEADERS) $(DEPENDS) -o main
 
 clean:
 	rm main
