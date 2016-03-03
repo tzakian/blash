@@ -12,7 +12,7 @@ namespace bloomhash {
     class  ValueType,
     class  Hash = std::hash<KeyType>,
     class  KeyEqual = std::equal_to<KeyType>,
-    size_t numBitsToUse = 12,
+    size_t numBitsToUse = 16,
     size_t defaultSize = 21>
       class BloomHash {
         private:
@@ -178,6 +178,10 @@ namespace bloomhash {
             if (eq(curr->key, key)) {
               // So delete it from the filter
               filters[idx]->Delete(key);
+
+              // We are removing an element, so make decrease the size
+              --used;
+
               // This was at the head of the chain. So simply replace what
               // the bucket points to as the head of the chain
               if (prev == nullptr) {

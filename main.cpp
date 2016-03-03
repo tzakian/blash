@@ -67,5 +67,30 @@ int main(void)
 
   cout << t->val << endl;
 
+  cout << "----------------------" << endl;
+  hash.erase("three");
+  t = hash.find("three");
+
+  // this had better be null now!
+  cout << t << endl;
+
+  cout << "----------------------" << endl;
+  hash.erase("10");
+  t = hash.find("10");
+
+  // this had better be null now!
+  cout << t << endl;
+
+  for (int i = 0; i < 30; ++i) {
+    hash.erase(to_string(i));
+  }
+
+  // We seem to be getting more false-positives than I was expecting here.
+  // Need to check and make sure that the logic is OK
+  for (int i = 0; i < 35; ++i) {
+    cout << hash.bucketContains(to_string(i)) << endl;
+    cout << hash.find(to_string(i)) << endl;
+  }
+
   return 0;
 }
