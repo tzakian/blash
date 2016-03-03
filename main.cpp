@@ -61,5 +61,11 @@ int main(void)
     cout << hash.bucketContains(to_string(i)) << endl;
   }
 
+
+  cout << "----------------------" << endl;
+  auto t = hash.find("three");
+
+  cout << t->val << endl;
+
   return 0;
 }

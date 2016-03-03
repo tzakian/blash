@@ -238,6 +238,7 @@ namespace bloomhash {
     size_t numBitsToUse,
     size_t defaultSize>
       // REMEMBER: we create filters lazily!
+      // NOT FOR NOW WE DON'T
       BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::BloomHash(BloomHash& other) {
         // State that needs to be copied:
         // * size of buckets -- DONE
@@ -402,10 +403,13 @@ namespace bloomhash {
       auto BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::find(const KeyType& key) {
         size_t hsh = hasher(key) % size;
         Node* bucket = nullptr;
-        if (filters[hsh].Contain(key)) {
+        DBG;
+        if (filters[hsh]->Contain(key) == cuckoofilter::Ok) {
           bucket = buckets[hsh];
           while (bucket) {
+            DBG
             if (eq(bucket->key, key)) {
+              DBG
               break;
             } else {
               bucket = bucket->next;
