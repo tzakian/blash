@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+#define DBG printf("LINE: %d\tFUNC: %s\t FILE: %s\n", __LINE__, __func__, __FILE__);
+
 namespace bloomhash {
 
   template<class KeyType,
@@ -31,9 +33,9 @@ namespace bloomhash {
           static constexpr size_t chainSize = 1024;
 
           std::vector<Node*> buckets;
-          std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>> filters =
-            std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>>(size,
-              cuckoofilter::CuckooFilter<KeyType, numBitsToUse>(chainSize));
+          std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>*> filters =
+            std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>*>(size);
+              //new cuckoofilter::CuckooFilter<KeyType, numBitsToUse>(chainSize));
 
 
           void insertInChain(size_t index, const KeyType& key, const ValueType& val);
@@ -68,26 +70,26 @@ namespace bloomhash {
     size_t defaultSize>
       void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::insertInChain(size_t idx, const KeyType& key, const ValueType& val) {
         // We will get a low set of false-positives here
-          std::cout << "IN insertInChain" << std::endl;
-          // XXX: The filter is segfaulting
-        if (filters[idx].Contain(key) == cuckoofilter::Ok) { // it is _in_ the chain so we need to search through and updat the val
-          std::cout << "IN insertInChain" << std::endl;
+        if (filters[idx]->Contain(key) == cuckoofilter::Ok) { // it is _in_ the chain so we need to search through and updat the val
+          DBG
           Node* curr = buckets[idx];
           while (curr) {
             if (eq(curr->key,key)) {
               curr->val = val;
+              break;
             }
+            curr = curr->next;
           }
         } else { // not in the chain so add it at the beginning
-          std::cout << "IN insertInChain" << std::endl;
-          filters[idx].Add(key);
+          DBG
+          filters[idx]->Add(key);
           Node* newStart = new Node();
           newStart->key  = key;
           newStart->val  = val;
           newStart->next = buckets[idx];
           buckets[idx]   = newStart;
         }
-        std::cout << "IN insertInChain" << std::endl;
+        DBG
       }
 
   template<class KeyType,
@@ -97,13 +99,17 @@ namespace bloomhash {
     size_t numBitsToUse,
     size_t defaultSize>
       void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::rehashResize() {
+        DBG
         size_t newSize = size * 2;
         // TODO: try to make this whole thing re-use the pre-existing memory
         // that we have already allocated for @buckets and @filters
         std::vector<Node*> newHash(newSize);
         // Chains are getting moved around so we need to re-do our filters
-        std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>> newFilters(newSize,
-            cuckoofilter::CuckooFilter<KeyType, numBitsToUse>(chainSize));
+        std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>*> newFilters(newSize);
+
+        for (int i = 0; i < newFilters.size(); ++i) {
+          newFilters[i] = new cuckoofilter::CuckooFilter<KeyType, numBitsToUse>(chainSize);
+        }
 
         // Go through our old buckets and filters
         for (int i = 0; i < size; ++i) {
@@ -131,7 +137,7 @@ namespace bloomhash {
               newHash[newHsh] = chain;
             } // end if
 
-            newFilters[newHash].Add(chain->key);
+            newFilters[newHsh]->Add(chain->key);
             chain = tmp;
 
           } // end while
@@ -158,7 +164,7 @@ namespace bloomhash {
         // probability of it being in the chain so go searching for it. If it
         // returns something else, then it's definitely _not_ in the chain so
         // don't do anything
-        if (filters[idx].Contain(key) == cuckoofilter::Ok) {
+        if (filters[idx]->Contain(key) == cuckoofilter::Ok) {
           // Note: don't delete till we _know_ it's in the chain -- the bloom
           // filter saying it's in the chain doesn't necessariy mean that it
           // actually is in the chain.
@@ -171,7 +177,7 @@ namespace bloomhash {
             // Found it
             if (eq(curr->key, key)) {
               // So delete it from the filter
-              filters[idx].Delete(key);
+              filters[idx]->Delete(key);
               // This was at the head of the chain. So simply replace what
               // the bucket points to as the head of the chain
               if (prev == nullptr) {
@@ -203,7 +209,7 @@ namespace bloomhash {
         // probability of it being in the chain so go searching for it. If it
         // returns something else, then it's definitely _not_ in the chain so
         // simply return false.
-        if (filters[idx].Contain(key) == cuckoofilter::Ok) {
+        if (filters[idx]->Contain(key) == cuckoofilter::Ok) {
           // probabilistic! This gives a high certainting that something with
           // that key is in the bucket but it need not be the case (but this
           // is _highly_ unlikely).
@@ -221,9 +227,9 @@ namespace bloomhash {
     size_t defaultSize>
       // We lazily allocate filters
       BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::BloomHash() : buckets(defaultSize) {
-       // for (auto filt : filters) {
-       //   filt = cuckoofilter::CuckooFilter<KeyType, numBitsToUse>(chainSize);
-       // }
+        for (int i = 0; i < filters.size(); ++i) {
+          filters[i] = new cuckoofilter::CuckooFilter<KeyType, numBitsToUse>(chainSize);
+        }
       }
   template<class KeyType,
     class ValueType,
@@ -367,7 +373,11 @@ namespace bloomhash {
     size_t numBitsToUse,
     size_t defaultSize>
       void BloomHash<KeyType, ValueType, Hash, KeyEqual, numBitsToUse, defaultSize>::insert(const KeyType& key, const ValueType& val) {
+        if (used >= size) {
+          rehashResize();
+        }
         insertInChain(hasher(key) % size, key, val);
+        ++used;
       }
 
   template<class KeyType,

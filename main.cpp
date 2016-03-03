@@ -47,5 +47,19 @@ int main(void)
 {
   bloomhash::BloomHash<string, string> hash;
   hash.insert("one", "two");
+  hash.insert("one", "two");
+  hash.insert("one", "two");
+  hash.insert("three", "four");
+
+  for (int i = 0; i < 30; ++i) {
+    hash.insert(to_string(i), to_string(i+1));
+  }
+
+  cout << "----------------------" << endl;
+
+  for (int i = 0; i < 35; ++i) {
+    cout << hash.bucketContains(to_string(i)) << endl;
+  }
+
   return 0;
 }
