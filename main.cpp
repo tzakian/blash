@@ -88,8 +88,8 @@ int main(void)
   // We seem to be getting more false-positives than I was expecting here.
   // Need to check and make sure that the logic is OK
   for (int i = 0; i < 35; ++i) {
-    cout << hash.bucketContains(to_string(i)) << endl;
-    cout << hash.find(to_string(i)) << endl;
+    cout << (hash.bucketContains(to_string(i)) == false &&
+             hash.find(to_string(i)) == nullptr) << endl;
   }
 
   return 0;

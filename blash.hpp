@@ -12,7 +12,7 @@ namespace bloomhash {
     class  ValueType,
     class  Hash = std::hash<KeyType>,
     class  KeyEqual = std::equal_to<KeyType>,
-    size_t numBitsToUse = 16,
+    size_t numBitsToUse = 32,
     size_t defaultSize = 21>
       class BloomHash {
         private:
@@ -153,6 +153,10 @@ namespace bloomhash {
         filters = newFilters;
       }
 
+  // XXX/FIXME: This isn't quite working correctly. We are getting that the
+  // filter does not contain e.g., 29 yet the chain does and we haven't
+  // deleted it. This means that we don't really delete it. This is a
+  // problem... (now, isn't it...)
   template<class KeyType,
     class ValueType,
     class Hash,
@@ -165,6 +169,7 @@ namespace bloomhash {
         // returns something else, then it's definitely _not_ in the chain so
         // don't do anything
         if (filters[idx]->Contain(key) == cuckoofilter::Ok) {
+          std::cout << "Trying to Delete key: " << key << std::endl;
           // Note: don't delete till we _know_ it's in the chain -- the bloom
           // filter saying it's in the chain doesn't necessariy mean that it
           // actually is in the chain.
@@ -177,6 +182,7 @@ namespace bloomhash {
             // Found it
             if (eq(curr->key, key)) {
               // So delete it from the filter
+              std::cout << "Deleting key: " << key << std::endl;
               filters[idx]->Delete(key);
 
               // We are removing an element, so make decrease the size
@@ -249,6 +255,7 @@ namespace bloomhash {
         // * each node in the table -- DONE
         // * filters -- How to copy these? -- just create a new one and add -- DONE
         // * size -- DONE
+        // XXX
         filters = std::vector<cuckoofilter::CuckooFilter<KeyType, numBitsToUse>>(other.size,
             cuckoofilter::CuckooFilter<KeyType, numBitsToUse>(chainSize));
         buckets = std::vector<Node*>(other.size);
