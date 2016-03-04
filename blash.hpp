@@ -4,7 +4,8 @@
 #include <iostream>
 #include <vector>
 
-#define DBG printf("LINE: %d\tFUNC: %s\t FILE: %s\n", __LINE__, __func__, __FILE__);
+//#define DBG printf("LINE: %d\tFUNC: %s\t FILE: %s\n", __LINE__, __func__, __FILE__);
+#define DBG
 
 namespace bloomhash {
 
@@ -81,8 +82,10 @@ namespace bloomhash {
             curr = curr->next;
           }
         } else { // not in the chain so add it at the beginning
-          DBG
-          filters[idx]->Add(key);
+          DBG;
+          if (filters[idx]->Add(key) != cuckoofilter::Ok) {
+            throw std::runtime_error("BloomHash insertInChain: Unable to add key to filter");
+          }
           Node* newStart = new Node();
           newStart->key  = key;
           newStart->val  = val;
@@ -137,7 +140,10 @@ namespace bloomhash {
               newHash[newHsh] = chain;
             } // end if
 
-            newFilters[newHsh]->Add(chain->key);
+            if (newFilters[newHsh]->Add(chain->key) != cuckoofilter::Ok) {
+              throw std::runtime_error("BloomHash rehashResize: Unable to add key to filter");
+            }
+
             chain = tmp;
 
           } // end while
@@ -183,7 +189,9 @@ namespace bloomhash {
             if (eq(curr->key, key)) {
               // So delete it from the filter
               std::cout << "Deleting key: " << key << std::endl;
-              filters[idx]->Delete(key);
+              if (filters[idx]->Delete(key) != cuckoofilter::Ok) {
+                throw std::runtime_error("BloomHash::deleteInChain: Failure to delete key in filter");
+              }
 
               // We are removing an element, so make decrease the size
               --used;
@@ -268,7 +276,9 @@ namespace bloomhash {
             Node* curr = other.buckets[i];
 
             // Add the data in
-            filters[i].Add(curr->key);
+            if (filters[i]->Add(curr->key) != cuckoofilter::Ok) {
+              throw std::runtime_error("BloomHash copy: Unable to add key to filter");
+            }
 
             // Setup the head
             Node* newNode = new Node(curr->key, curr->val);
@@ -276,7 +286,9 @@ namespace bloomhash {
             curr = curr->next;
 
             while (curr) {
-              filters[i].Add(curr->key);
+              if (filters[i]->Add(curr->key) != cuckoofilter::Ok) {
+                throw std::runtime_error("BloomHash copy: Unable to add key to filter");
+              }
               Node* newNodeNext = new Node(curr->key, curr->val);
               newNode->next = newNodeNext;
               newNode = newNode->next;
@@ -327,7 +339,9 @@ namespace bloomhash {
             Node* curr = other.buckets[i];
 
             // Add the data in
-            ret.filters[i].Add(curr->key);
+            if (ret.filters[i]->Add(curr->key) != cuckoofilter::Ok) {
+              throw std::runtime_error("BloomHash copy=: Unable to add key to filter");
+            }
 
             // Setup the head
             Node* newNode = new Node(curr->key, curr->val);
@@ -335,7 +349,9 @@ namespace bloomhash {
             curr = curr->next;
 
             while (curr) {
-              ret.filters[i].Add(curr->key);
+              if (ret.filters[i]->Add(curr->key) != cuckoofilter::Ok) {
+                throw std::runtime_error("BloomHash copy=: Unable to add key to filter");
+              }
               Node* newNodeNext = new Node(curr->key, curr->val);
               newNode->next = newNodeNext;
               newNode = newNode->next;

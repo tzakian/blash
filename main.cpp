@@ -85,6 +85,8 @@ int main(void)
     hash.erase(to_string(i));
   }
 
+  cout << "--------------------" << endl;
+
   // We seem to be getting more false-positives than I was expecting here.
   // Need to check and make sure that the logic is OK
   for (int i = 0; i < 35; ++i) {
